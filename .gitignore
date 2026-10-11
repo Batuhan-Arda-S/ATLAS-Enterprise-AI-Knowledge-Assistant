@@ -34,6 +34,7 @@ Thumbs.db
 # Application storage
 backend/storage/
 uploads/
+backups/
 pgdata/
 postgres_data/
 *.sqlite

@@ -61,3 +61,5 @@ Vite uses `http://127.0.0.1:8000` as the API URL by default. The backend allows 
 From `backend`, run `python -m pytest -q test`. From `frontend`, run `npm test`, `npm run build`, and `npm run lint`.
 
 The [GitHub Actions workflow](.github/workflows/ci.yml) runs on pushes and pull requests to `main` and can be started manually. Its backend job uses an isolated PostgreSQL/pgvector service, applies Alembic migrations, verifies the schema and runs pytest. Its frontend job runs Vitest, ESLint and the production TypeScript build. Standard CI uses mocked Ollama and embedding behavior in tests; a real Qwen3 integration check requires the local Ollama setup.
+
+For health checks, backups, restore verification and local recovery steps, see the [operations runbook](docs/operations.md).

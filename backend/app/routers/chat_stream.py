@@ -6,7 +6,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app.core.config import OLLAMA_BASE_URL
+from app.core.config import LLM_MODEL, OLLAMA_BASE_URL
 from app.database.session import SessionFactory
 from app.dependencies.auth import get_current_user
 from app.models.document import Document
@@ -51,7 +51,7 @@ def stream_chat(conversation_id: int,payload: ChatStreamRequest,
     def events():
         try:
             with httpx.Client(base_url=OLLAMA_BASE_URL,timeout=120.0) as client:
-                llm_service = LLMService(client=client,model="qwen3:4b-instruct")
+                llm_service = LLMService(client=client,model=LLM_MODEL)
 
                 rag_service = RAGService(session_factory=SessionFactory,
                                          search_service=semantic_search_service,
@@ -86,8 +86,8 @@ def stream_chat(conversation_id: int,payload: ChatStreamRequest,
                                              "retrieval_status":result.retrieval_status,
                                              "cited_sources":[asdict(source) for source in result.cited_sources]})
 
-        except Exception:
-            logger.exception("Chat streaming failed")
+        except Exception as exc:
+            logger.error("Chat streaming failed: error_type=%s", type(exc).__name__)
             yield encode_sse("error",{"message":"Chat streaming failed"})
 
     return StreamingResponse(events(),media_type="text/event-stream",

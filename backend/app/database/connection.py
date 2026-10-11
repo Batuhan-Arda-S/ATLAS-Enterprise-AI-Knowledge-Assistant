@@ -25,7 +25,7 @@ else:
         database=DB_NAME,
     )
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, connect_args={"connect_timeout": 3})
 
 
 def check_database_connection() -> tuple[str,str]:

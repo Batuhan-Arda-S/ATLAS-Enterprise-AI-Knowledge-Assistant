@@ -7,7 +7,10 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir 'torch==2.14.1+cpu' \
+        --index-url https://download.pytorch.org/whl/cpu \
+        --extra-index-url https://pypi.org/simple \
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
@@ -20,4 +23,4 @@ USER atlas
 
 EXPOSE 8000
 
-CMD ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000"]
+CMD ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000","--no-access-log"]

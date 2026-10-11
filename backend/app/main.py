@@ -13,6 +13,7 @@ from app.routers.semantic_search import router as semantic_search_router
 from app.routers.ask import router as ask_router
 from app.routers.chat_stream import router as chat_stream_router
 from app.routers.chat import router as chat_router
+from app.routers.health import router as health_router
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -27,6 +28,7 @@ app.include_router(semantic_search_router)
 app.include_router(ask_router)
 app.include_router(chat_stream_router)
 app.include_router(chat_router)
+app.include_router(health_router)
 
 @app.exception_handler(DocumentNotFoundError)
 def document_not_found_handler(request:Request,exception:DocumentNotFoundError):

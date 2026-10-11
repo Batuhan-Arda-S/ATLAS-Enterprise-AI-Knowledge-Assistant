@@ -3,6 +3,13 @@ name: atlas
 services:
   db:
     image: pgvector/pgvector:0.8.6-pg18-trixie
+    restart: unless-stopped
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
     environment:
       POSTGRES_DB: atlas_compose_db
@@ -23,6 +30,13 @@ services:
   backend:
     build:
       context: ./backend
+    restart: unless-stopped
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
     env_file:
       - ./.env.compose
@@ -43,18 +57,39 @@ services:
       db:
         condition: service_healthy
 
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3).close()"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+
 
   frontend:
     build:
       context: ./frontend
       args:
         VITE_API_URL: /api
+    restart: unless-stopped
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
     ports:
       - "127.0.0.1:8088:8080"
 
     depends_on:
       - backend
+
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 
 volumes:

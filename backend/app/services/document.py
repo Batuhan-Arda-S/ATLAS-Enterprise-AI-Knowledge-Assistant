@@ -87,8 +87,8 @@ class DocumentService:
             if storage_key:
                 try:
                     file_storage.delete(storage_key)
-                except OSError:
-                    logger.exception("Document file cleanup failed for document %s",document_id)
+                except OSError as exc:
+                    logger.error("Document file cleanup failed: document_id=%s error_type=%s",document_id,type(exc).__name__)
             return deleted_document
 
         except Exception:
@@ -131,7 +131,8 @@ class DocumentService:
                 raise ValueError("No extractable text")
 
 
-        except Exception:
+        except Exception as exc:
+            logger.error("Document processing failed: stage=parse document_id=%s error_type=%s",document.id,type(exc).__name__)
             document.processing_status=(DOCUMENT_STATUS_FAILED)
 
             try:
@@ -162,7 +163,8 @@ class DocumentService:
 
             session.commit()
 
-        except Exception:
+        except Exception as exc:
+            logger.error("Document processing failed: stage=embed document_id=%s error_type=%s",document_id,type(exc).__name__)
             session.rollback()
             document=session.get(Document,document_id)
             document.processing_status=DOCUMENT_STATUS_FAILED
