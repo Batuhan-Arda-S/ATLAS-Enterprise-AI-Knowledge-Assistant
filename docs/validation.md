@@ -1,6 +1,6 @@
 # Final validation record — 11 October 2026
 
-This is an evidence log for the private local ATLAS deployment. It reports completed checks and an outstanding browser check separately. Tests used synthetic accounts/documents and the Docker Compose database; the separate Windows PostgreSQL database was not used. No live Docker volume was deleted.
+This is an evidence log for the private local ATLAS deployment. Tests used synthetic accounts/documents and the Docker Compose database; the separate Windows PostgreSQL database was not used. No live Docker volume was deleted. The final browser acceptance was completed after the initial Lesson 132 documentation commit.
 
 ## Baseline and automated checks
 
@@ -17,6 +17,7 @@ Before edits, the local `main` checkout matched `origin/main` and had no working
 | HTTP health | `/api/health/live`, `/api/health/ready`, `/api/health/ollama` | HTTP **200** each |
 | Alembic | `docker compose --env-file .env.compose exec -T backend alembic current` | `c49f5e82a731 (head)` |
 | Mermaid parser | Six diagrams in README/architecture parsed with Mermaid 12.1.0 | Pass |
+| Playwright Chromium browser acceptance | `npm run test:e2e` from `frontend`, live Compose API and host Ollama | **1 passed**; ten real screenshots |
 
 The first pytest attempt was launched from the repository root and failed to import `app`; the same suite passed when run from its documented `backend` working directory. No test was skipped or weakened.
 
@@ -32,7 +33,11 @@ The existing Lesson 131 backup `atlas-20261011-195702-c68a4a09` was verified aga
 
 ## Browser acceptance and visual artifacts
 
-**Blocked / not passed:** The Windows Computer Use tool stopped when it could not determine the current Edge URL with enough confidence. Therefore this delivery did not execute the actual browser file-picker upload, visual document selection, Evidence Viewer click-through, mobile layout, browser logout, screenshot capture or demo video. Frontend component tests and API E2E cover parts of those flows, but are not substitutes for a real browser acceptance result. A repeatable synthetic [browser demo procedure](demo.md) is provided. No screenshots or video were fabricated.
+The earlier Windows Computer Use attempt was blocked because it could not verify the open Edge URL. The final run instead used a **fresh Playwright-managed Chromium headless browser context** and the live `http://127.0.0.1:8088` application. No network route or API response was mocked. The full managed Chrome binary initially failed to launch on this Windows host because of a side-by-side configuration error; Playwright's managed Chromium headless shell launched successfully. The failed attempt was an environment launch issue, not an application test pass.
+
+`frontend/e2e/atlas-browser.e2e.mjs` registered a random synthetic `@example.com` user, promoted only that account in the asserted `atlas_compose_db`, and logged in through the real React form. It opened the browser `filechooser` event and supplied the on-disk English TXT fixture, then verified HTTP 201, `processed` status, library listing and selection. It clicked **New chat**, sent an English question, observed nonempty assistant text while the UI still showed its pending state, and captured that screen **before** SSE `done`. It also read the real `text/event-stream` response and confirmed token frames preceded `done`; the successful final run had **62 token events**. It clicked the citation, checked that the returned chunk and document IDs matched the uploaded document and that the actual passage contained the expected one-business-day fact. It reopened the conversation through **Recent chats**, checked history, opened mobile library and Evidence panels, then signed out and confirmed that a reload remained on the login screen.
+
+Viewport checks passed at **1920 × 1080**, **1440 × 900** and **390 × 844**. Screenshot review exposed a genuine mobile overflow: the chat region measured `scrollWidth=409` with `clientWidth=390`, visibly clipping assistant text. A new assertion reproduced the failure; setting the assistant body width/max-width to 100% fixed it. The full browser test then passed, and the updated mobile screenshot shows wrapped text. Ten unaltered application screenshots are in [assets](assets); all visible account/document/question/answer content is English and synthetic. No video was produced. Each test run adds synthetic records; it deletes no existing data.
 
 ## GitHub and secrets
 

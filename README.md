@@ -14,7 +14,35 @@ This repository documents a working local deployment and its limits. It is not a
 
 ## Demo and screenshots
 
-The [repeatable synthetic demo scenario](docs/demo.md) covers login, browser file upload, chat, source inspection, history and logout. **No browser screenshots or video are included in this delivery:** the available Windows Computer Use tool stopped before it could verify the browser URL. The API and real Qwen3 flow were tested separately; the browser file picker remains an explicitly unverified acceptance step. No mockup is presented as a product screenshot.
+These are real screenshots from an isolated Playwright Chromium context connected to the local Docker application and Windows Ollama. The account and policy are fictional. The [repeatable browser test](frontend/e2e/atlas-browser.e2e.mjs) covers login, the browser file chooser, upload, Qwen3 streaming, citation inspection, history, mobile panels and logout; the [demo scenario](docs/demo.md) gives the same flow to a human reviewer.
+
+**Desktop workspace · 1920 × 1080**
+
+![ATLAS desktop workspace with a selected synthetic document](docs/assets/desktop-workspace-1920x1080.png)
+
+**Document library and browser file chooser · 1440 × 900**
+
+![ATLAS document library with a synthetic TXT file selected for upload](docs/assets/desktop-library-upload-1440x900.png)
+
+**English Qwen3 answer and source link · 1440 × 900**
+
+![ATLAS English Qwen3 conversation with a source link](docs/assets/desktop-english-qwen3-conversation-1440x900.png)
+
+**Citation opened in Evidence Viewer · 1440 × 900**
+
+![ATLAS cited policy passage in Evidence Viewer](docs/assets/desktop-citation-evidence-1440x900.png)
+
+**Conversation reopened from Recent chats · 1440 × 900**
+
+![ATLAS restored conversation history](docs/assets/desktop-conversation-history-1440x900.png)
+
+**Mobile workspace and Evidence Viewer · 390 × 844**
+
+![ATLAS mobile chat layout](docs/assets/mobile-workspace-390x844.png)
+
+![ATLAS mobile Evidence Viewer](docs/assets/mobile-evidence-390x844.png)
+
+Additional real captures include the [1440 × 900 workspace](docs/assets/desktop-workspace-1440x900.png), [visible answer before SSE completion](docs/assets/desktop-streaming-before-done-1440x900.png), and [mobile library](docs/assets/mobile-library-390x844.png).
 
 ## Architecture
 
@@ -91,6 +119,8 @@ JWT bearer auth protects the API; document upload, read, search, ask, sources an
 
 From `backend`: `..\.venv\Scripts\python.exe -m pytest -q test` in the validated Windows workspace, or `python -m pytest -q test` in a fresh Python environment with `requirements-dev.txt`. From `frontend`: `npm ci`, `npm test`, `npm run lint`, and `npm run build`.
 
+For the real local browser acceptance test, start Compose and host Ollama, then from `frontend` run `npx playwright install chromium` once and `npm run test:e2e`. The test uses a fresh managed Chromium context and the live `/api` endpoints; it does not mock network responses. It requires Docker CLI access, creates a new synthetic admin and document in the **Docker** database on each run, and writes real screenshots to `docs/assets/`. It is separate from standard GitHub CI because the runner does not have this Windows Ollama service.
+
 [GitHub Actions CI](.github/workflows/ci.yml) applies migrations against an isolated pgvector PostgreSQL service, runs backend tests, and separately runs frontend tests, lint and build. It mocks embedding/Ollama behavior; [local validation](docs/validation.md) covers real Qwen3 and Compose integration.
 
 The [synthetic evaluation](docs/evaluation.md) has 24 predefined questions over a nine-chunk fictional policy. The measured mean Recall@3 is **0.984 over 21 questions with labeled relevant chunks**; manual review passed 7 of 8 prespecified model-answer examples. These small fixture results are not a production accuracy estimate. Reproduce them with `python backend/scripts/evaluate_final.py` while the Compose stack is running; each run adds a synthetic user and document to that local Docker database.
@@ -99,4 +129,4 @@ The [synthetic evaluation](docs/evaluation.md) has 24 predefined questions over 
 
 See [operations.md](docs/operations.md) for health checks, backup, isolated restore and recovery, [validation.md](docs/validation.md) for final acceptance evidence, and [portfolio.md](docs/portfolio.md) for honest project summaries.
 
-Current limits include: admin-only shared corpus without per-document ACL; no refresh tokens, MFA or rate limiting; synchronous ingestion; no active retrieval similarity threshold; citation ID checks without semantic proof; local Ollama host dependency; no high-availability or public TLS design. The browser file-picker and visual screenshot acceptance step was blocked in this delivery, as recorded in the validation log.
+Current limits include: admin-only shared corpus without per-document ACL; no refresh tokens, MFA or rate limiting; synchronous ingestion; no active retrieval similarity threshold; citation ID checks without semantic proof; local Ollama host dependency; no high-availability or public TLS design.
