@@ -36,4 +36,6 @@ The existing Lesson 131 backup `atlas-20261011-195702-c68a4a09` was verified aga
 
 ## GitHub and secrets
 
-The GitHub CLI authenticated as `Batuhan-Arda-S` and reported `Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant` as **PRIVATE** before push. Gitleaks v8.30.1 scanned the staged diff with `git --staged --redact` (about 65 KB) and found **no leaks**. `.env.compose`, backend/frontend `.env` files, model cache and temporary demo credentials were not staged. The temporary synthetic credentials file was removed after the browser tool stopped. The final commit and GitHub Actions result will be appended after push.
+The GitHub CLI authenticated as `Batuhan-Arda-S` and reported `Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant` as **PRIVATE** before and after push. Gitleaks v8.30.1 scanned the staged diff with `git --staged --redact` (about 66 KB) and found **no leaks**. `.env.compose`, backend/frontend `.env` files, model cache and temporary demo credentials were not staged. The temporary synthetic credentials file was removed after the browser tool stopped.
+
+The implementation/documentation commit `cecf82a` was pushed to private `main`. Its [ATLAS CI run](https://github.com/Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant/actions/runs/38171091188) **passed** both Backend Tests and Frontend Tests: isolated pgvector setup, migration verification, pytest, Vitest, lint and production build. This validation record was finalized in a later documentation commit; check that later run separately in GitHub Actions.
