@@ -1,65 +1,102 @@
 # ATLAS — Enterprise AI Knowledge Assistant
 
-ATLAS is a document based knowledge assistant. Users can search shared documents and ask questions with citations; administrators can upload and manage documents. Chat history is stored per user, and answers can stream from a local Ollama model.
+ATLAS is a local, document-scoped retrieval-augmented knowledge assistant. An administrator uploads a PDF, DOCX or TXT document, selects it in a React workspace and asks questions. The backend retrieves passages from PostgreSQL/pgvector, streams a response from a host Ollama Qwen3 model, and links cited chunks to an Evidence Viewer. Chat history belongs to the authenticated user.
 
-## Stack and features
+This repository documents a working local deployment and its limits. It is not a public production deployment or a claim of guaranteed factual accuracy.
 
-- **Backend:** Python 3.10, FastAPI, SQLAlchemy, Alembic, PostgreSQL 18 with pgvector.
-- **AI:** multilingual E5 embeddings through Sentence Transformers, retrieval augmented generation, Ollama/Qwen3 streaming, source citations.
-- **Frontend:** React, TypeScript, Vite and Nginx in Docker Compose.
-- **Security:** JWT authentication, role and ownership checks, upload validation and resource limits.
+## What is implemented
 
-The Docker Compose configuration runs PostgreSQL and the application in containers. Ollama runs on the host and is reached from the backend through `host.docker.internal`.
+- Bounded PDF, DOCX and UTF-8 TXT ingestion, text extraction, smart chunking and multilingual E5 embeddings.
+- Document-scoped cosine retrieval from pgvector and Qwen3 answers with retrieved-source ID validation.
+- SSE token streaming, per-user conversation history, and a React source viewer that shows the full cited passage.
+- JWT login, admin-only document/RAG routes, conversation ownership checks, same-origin Nginx proxy and non-root containers.
+- Docker health endpoints, persistent volumes, backup/isolated-restore scripts and separate backend/frontend GitHub Actions jobs.
 
-## Requirements
+## Demo and screenshots
 
-- Docker Desktop with Compose for the container setup.
-- An Ollama service on the Windows host with the Qwen3 model configured by the application. The host service must accept requests from the backend container.
-- For a manual setup: Python 3.10, Node.js 22, PostgreSQL 18 with the `vector` extension, and Ollama.
+The [repeatable synthetic demo scenario](docs/demo.md) covers login, browser file upload, chat, source inspection, history and logout. **No browser screenshots or video are included in this delivery:** the available Windows Computer Use tool stopped before it could verify the browser URL. The API and real Qwen3 flow were tested separately; the browser file picker remains an explicitly unverified acceptance step. No mockup is presented as a product screenshot.
 
-## Docker Compose
+## Architecture
 
-Create a local `.env.compose` in the project root with your own strong values:
-
-```dotenv
-ATLAS_DB_PASSWORD=replace_with_a_unique_database_password
-JWT_SECRET_KEY=replace_with_a_long_random_jwt_secret
+```mermaid
+flowchart LR
+    UI[React workspace] -->|/api via Nginx| API[FastAPI]
+    API --> DB[(PostgreSQL + pgvector)]
+    API --> Files[(upload volume)]
+    API -->|host.docker.internal| Model[Windows Ollama / Qwen3]
 ```
 
-Do not commit this file. Start the application with:
+Upload → format validation → text extraction → approximately 500-character smart chunks → `intfloat/multilingual-e5-small` passage embeddings → PostgreSQL `VECTOR(384)` records. For a question, ATLAS embeds the query, searches only the selected document, constructs a prompt with untrusted JSON source excerpts, calls `qwen3:4b-instruct` through Ollama, validates that cited chunk IDs were retrieved, and streams the answer. Opening a citation fetches the stored passage; the UI may highlight an exact overlap to help the reader review it. Citation IDs do not prove semantic correctness. See the [architecture](docs/architecture.md) and [engineering decisions](docs/engineering-decisions.md).
 
-```powershell
-docker compose --env-file .env.compose up --build -d
-```
+## Stack
 
-The frontend is available at `http://127.0.0.1:8088`. Nginx proxies `/api/` to the backend on the same origin. PostgreSQL is available only inside the Compose network. The named volumes keep database records, uploads and the model cache across restarts.
+| Layer | Technology |
+| --- | --- |
+| API, ORM, migrations | Python 3.10, FastAPI, SQLAlchemy, Alembic |
+| Database and search | PostgreSQL 18, pgvector, cosine distance, HNSW index |
+| Embeddings | Sentence Transformers, `intfloat/multilingual-e5-small` |
+| Generation | Windows host Ollama, `qwen3:4b-instruct` |
+| Web | React 19, TypeScript, Vite, Nginx |
+| Testing/CI | pytest, Vitest, ESLint, TypeScript, GitHub Actions |
 
-## Manual local setup
+## Local Docker Compose setup
 
-Create a PostgreSQL database and user for ATLAS, and enable the `vector` extension. Copy [`backend/.env.example`](backend/.env.example) to `backend/.env`, then set your own database credentials and JWT secret. Keep that file local. Start Ollama and ensure the configured Qwen3 model is available.
+Requirements: Docker Desktop with Compose; a Windows host Ollama service reachable by the backend at `host.docker.internal:11434`; the `qwen3:4b-instruct` model installed in Ollama; enough disk for the Python image, embedding model cache and PostgreSQL volume. CPU inference may be slow. This exact Compose host bridge was validated on Windows; another OS requires checking the Ollama address and host networking.
 
-```powershell
-py -3.10 -m venv backend/.venv
-backend/.venv/Scripts/python -m pip install -r backend/requirements-dev.txt
-Set-Location backend
-.venv/Scripts/python -m alembic upgrade head
-.venv/Scripts/python -m uvicorn app.main:app --reload
-```
+1. Create **untracked** `.env.compose` in the repository root with unique strong values:
 
-In another terminal, from the project root:
+   ```dotenv
+   ATLAS_DB_PASSWORD=replace_with_a_unique_long_password
+   JWT_SECRET_KEY=replace_with_a_unique_long_random_secret
+   ```
 
-```powershell
-Set-Location frontend
-npm ci
-npm run dev
-```
+2. Start Ollama and pull the configured model on the host:
 
-Vite uses `http://127.0.0.1:8000` as the API URL by default. The backend allows the local Vite development origins through CORS.
+   ```powershell
+   ollama pull qwen3:4b-instruct
+   ```
 
-## Tests and CI
+3. On a **new, empty** Compose database, build, start PostgreSQL, apply migrations, then start all services:
 
-From `backend`, run `python -m pytest -q test`. From `frontend`, run `npm test`, `npm run build`, and `npm run lint`.
+   ```powershell
+   docker compose --env-file .env.compose build backend frontend
+   docker compose --env-file .env.compose up -d db
+   docker compose --env-file .env.compose run --rm backend alembic upgrade head
+   docker compose --env-file .env.compose up -d
+   .\scripts\diagnostics.ps1
+   ```
 
-The [GitHub Actions workflow](.github/workflows/ci.yml) runs on pushes and pull requests to `main` and can be started manually. Its backend job uses an isolated PostgreSQL/pgvector service, applies Alembic migrations, verifies the schema and runs pytest. Its frontend job runs Vitest, ESLint and the production TypeScript build. Standard CI uses mocked Ollama and embedding behavior in tests; a real Qwen3 integration check requires the local Ollama setup.
+4. Open `http://127.0.0.1:8088`. The backend and PostgreSQL have no published host ports; Nginx proxies `/api/` on the same origin.
 
-For health checks, backups, restore verification and local recovery steps, see the [operations runbook](docs/operations.md).
+5. Register an account through `POST /api/users/register` (for example, the API docs at `http://127.0.0.1:8088/api/docs`). Registration creates an **employee**; the frontend may show the workspace shell, but document and chat API requests will be denied. A trusted operator must grant the first admin role in the Compose database. There is currently no self-service admin bootstrap screen or management command. Confirm you are operating on `atlas_compose_db` before changing a role; never run this against a separate Windows PostgreSQL installation.
+
+   ```powershell
+   docker compose --env-file .env.compose exec -T db psql -U atlas_compose_user -d atlas_compose_db -c "SELECT current_database();"
+   docker compose --env-file .env.compose exec -T db psql -U atlas_compose_user -d atlas_compose_db -c "UPDATE users SET role='admin' WHERE email='replace-with-registered-email@example.com' AND role='employee';"
+   ```
+
+   Replace the example email, verify the first command names `atlas_compose_db` and verify the update reports exactly one row. Then sign in with that registered account.
+
+For an existing installation, follow the backup and migration procedure in [operations.md](docs/operations.md). Do not reset or remove named volumes as a shortcut.
+
+### Manual development setup
+
+The Docker path above is the validated local deployment. Manual mode requires Python 3.10, Node.js 22, PostgreSQL 18 with `vector`, and Ollama. Copy `backend/.env.example` to `backend/.env` and set local database/JWT values. Install `backend/requirements-dev.txt`, apply Alembic migrations from `backend`, run `uvicorn app.main:app`, then run `npm ci` and `npm run dev` from `frontend`. Vite uses local development CORS origins. Models are downloaded separately; they are not committed.
+
+## Security model
+
+JWT bearer auth protects the API; document upload, read, search, ask, sources and chat are admin-only. Conversation reads and streams additionally check `user_id`, so one admin cannot open another admin's history. Uploaded document passages are untrusted data in the RAG prompt. File, parser, page, expansion and extracted-text limits reduce upload risk. The private Compose deployment binds Nginx to loopback; PostgreSQL stays internal. Secrets live in ignored environment files, not source code. See [architecture](docs/architecture.md) for exact boundaries and [validation](docs/validation.md) for tested checks.
+
+## Tests, evaluation and CI
+
+From `backend`: `..\.venv\Scripts\python.exe -m pytest -q test` in the validated Windows workspace, or `python -m pytest -q test` in a fresh Python environment with `requirements-dev.txt`. From `frontend`: `npm ci`, `npm test`, `npm run lint`, and `npm run build`.
+
+[GitHub Actions CI](.github/workflows/ci.yml) applies migrations against an isolated pgvector PostgreSQL service, runs backend tests, and separately runs frontend tests, lint and build. It mocks embedding/Ollama behavior; [local validation](docs/validation.md) covers real Qwen3 and Compose integration.
+
+The [synthetic evaluation](docs/evaluation.md) has 24 predefined questions over a nine-chunk fictional policy. The measured mean Recall@3 is **0.984 over 21 questions with labeled relevant chunks**; manual review passed 7 of 8 prespecified model-answer examples. These small fixture results are not a production accuracy estimate. Reproduce them with `python backend/scripts/evaluate_final.py` while the Compose stack is running; each run adds a synthetic user and document to that local Docker database.
+
+## Operations and limitations
+
+See [operations.md](docs/operations.md) for health checks, backup, isolated restore and recovery, [validation.md](docs/validation.md) for final acceptance evidence, and [portfolio.md](docs/portfolio.md) for honest project summaries.
+
+Current limits include: admin-only shared corpus without per-document ACL; no refresh tokens, MFA or rate limiting; synchronous ingestion; no active retrieval similarity threshold; citation ID checks without semantic proof; local Ollama host dependency; no high-availability or public TLS design. The browser file-picker and visual screenshot acceptance step was blocked in this delivery, as recorded in the validation log.
