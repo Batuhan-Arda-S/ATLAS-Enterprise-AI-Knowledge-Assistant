@@ -1,0 +1,47 @@
+{
+  "document_id": 12,
+  "cases": [
+    {
+      "question": "How many days per week may full-time employees work remotely?",
+      "expected_status": "answered",
+      "expected_cited_chunk_ids": [1],
+      "expected_fact": "Up to two days per week."
+    },
+    {
+      "question": "Who must approve remote work requests and annual leave requests?",
+      "expected_status": "answered",
+      "expected_cited_chunk_ids": [1, 2],
+      "expected_fact": "The employee's direct manager must approve both types of requests."
+    },
+    {
+      "question": "How many days of paid annual leave do full-time employees receive?",
+      "expected_status": "answered",
+      "expected_cited_chunk_ids": [2],
+      "expected_fact": "20 working days each calendar year."
+    },
+    {
+      "question": "How quickly must suspected security incidents be reported?",
+      "expected_status": "answered",
+      "expected_cited_chunk_ids": [3],
+      "expected_fact": "Within one hour of discovery."
+    },
+    {
+      "question": "Where must confidential company documents be stored?",
+      "expected_status": "answered",
+      "expected_cited_chunk_ids": [3],
+      "expected_fact": "In the approved company document repository, not personal cloud storage."
+    },
+    {
+      "question": "What is the company's maternity leave policy?",
+      "expected_status": "insufficient_evidence",
+      "expected_cited_chunk_ids": [],
+      "expected_fact": "The document does not establish a maternity leave policy."
+    },
+    {
+      "question": "How many employees work at the company?",
+      "expected_status": "insufficient_evidence",
+      "expected_cited_chunk_ids": [],
+      "expected_fact": "The document does not establish the employee count."
+    }
+  ]
+}

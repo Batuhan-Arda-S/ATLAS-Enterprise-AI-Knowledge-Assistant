@@ -1,0 +1,126 @@
+.auth-page {
+    min-height: 100dvh;
+    background: #121414;
+    color: #e9ebea;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.auth-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 56px;
+    padding: 0 20px;
+    border-bottom: 1px solid #303333;
+    background: #161818;
+}
+
+.auth-brand {
+    color: #e9ebea;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.auth-main {
+    display: grid;
+    flex: 1;
+    place-items: center;
+    padding: 32px 20px;
+}
+
+.auth-entry {
+    width: min(100%, 360px);
+    margin-bottom: 5vh;
+}
+
+.auth-entry h1 {
+    margin: 0 0 28px;
+    color: #e9ebea;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #b5bbb7;
+    font-size: 12px;
+}
+
+.login-field input {
+    display: block;
+    width: 100%;
+    height: 46px;
+    padding: 0 12px;
+    border: 1px solid #444a46;
+    border-radius: 4px;
+    background: #202323;
+    color: #e9ebea;
+    font: inherit;
+    font-size: 15px;
+}
+
+.login-field input:focus-visible {
+    border-color: #89bda8;
+    outline: 2px solid #89bda8;
+    outline-offset: 2px;
+}
+
+.login-form button {
+    min-height: 46px;
+    margin-top: 4px;
+    border: 1px solid #89bda8;
+    border-radius: 4px;
+    background: #89bda8;
+    color: #14241a;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.login-form button:hover:not(:disabled) {
+    background: #a8d1bd;
+    border-color: #a8d1bd;
+}
+
+.login-form button:focus-visible {
+    outline: 2px solid #e9ebea;
+    outline-offset: 3px;
+}
+
+.login-form button:disabled {
+    opacity: .55;
+    cursor: wait;
+}
+
+.login-error {
+    margin: 0;
+    color: #efb4ad;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .auth-header { padding: 0 20px; }
+}
+
+@media (max-height: 500px) {
+    .auth-main { place-items: start center; }
+    .auth-entry { margin-bottom: 0; }
+}

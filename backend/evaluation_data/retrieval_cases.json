@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "document_id": 12,
+      "question": "How many days per week may full-time employees work remotely?",
+      "relevant_chunk_ids": [1]
+    },
+    {
+      "document_id": 12,
+      "question": "Which requests need a direct manager's approval before remote work or annual leave?",
+      "relevant_chunk_ids": [1, 2]
+    },
+    {
+      "document_id": 12,
+      "question": "If an employee notices a possible security incident, how quickly must they alert the IT security team?",
+      "relevant_chunk_ids": [3]
+    },
+    {
+      "document_id": 12,
+      "question": "What should an employee do when their company laptop stops working?",
+      "relevant_chunk_ids": [4]
+    },
+    {
+      "document_id": 12,
+      "question": "How soon after a business trip must staff submit an expense claim with itemized receipts?",
+      "relevant_chunk_ids": [5]
+    }
+  ]
+}

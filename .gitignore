@@ -1,0 +1,57 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# Application storage
+backend/storage/
+uploads/
+pgdata/
+postgres_data/
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.backup
+*.sql.gz
+
+# Downloaded model artifacts and caches
+.cache/huggingface/
+.hf-cache/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Logs
+*.log
+installed-packages.txt
