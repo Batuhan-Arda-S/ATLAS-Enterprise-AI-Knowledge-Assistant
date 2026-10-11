@@ -34,7 +34,7 @@ q15 asks which portal is used for remote work, leave and acceptable-use acknowle
 
 ## Reproduction
 
-With the private local Compose stack running and `.env.compose` configured, from the repository root:
+With the loopback-only local Compose stack running and `.env.compose` configured, from the repository root:
 
 ```powershell
 python backend/scripts/evaluate_final.py

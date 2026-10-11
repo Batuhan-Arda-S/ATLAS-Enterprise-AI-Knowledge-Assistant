@@ -21,4 +21,4 @@ The implementation facts below are verified from the current repository. Where t
 - A citation must identify a retrieved chunk. Semantic support is reviewed by a human in the small final evaluation; it is not formally verified by the backend.
 - Password login has a 30-minute access token by default and no refresh flow, password reset, MFA or rate limiting. The frontend keeps the token in memory, so a reload requires login again.
 - Uploads are bounded by file, parser and extracted-text limits. Processing still happens in the request path and should be moved to an isolated worker before use with untrusted high-volume uploads.
-- The GitHub repository is private, and this Compose setup is intentionally loopback-only. A public deployment would require a separate threat model and operations design.
+- The GitHub repository is public, while this Compose setup remains loopback-only. Deploying the application to the public internet would require a separate threat model and operations design.
