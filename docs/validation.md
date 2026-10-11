@@ -4,7 +4,7 @@ This is an evidence log for the private local ATLAS deployment. Tests used synth
 
 ## Baseline and automated checks
 
-Before edits, the local `main` checkout matched `origin/main` and had no working-tree changes. Compose `db`, `backend` and `frontend` were running and healthy. Existing CI at the prior Lesson 131 commit was green; the Lesson 132 commit's CI result is recorded below after push.
+Before edits, the local `main` checkout matched `origin/main` and had no working-tree changes. Compose `db`, `backend` and `frontend` were running and healthy. Existing CI at the prior Lesson 131 commit was green; the Lesson 132 and final browser acceptance CI results are recorded below.
 
 | Check | Command / observation | Result |
 | --- | --- | --- |
@@ -43,4 +43,6 @@ Viewport checks passed at **1920 × 1080**, **1440 × 900** and **390 × 844**. 
 
 The GitHub CLI authenticated as `Batuhan-Arda-S` and reported `Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant` as **PRIVATE** before and after push. Gitleaks v8.30.1 scanned the staged diff with `git --staged --redact` (about 66 KB) and found **no leaks**. `.env.compose`, backend/frontend `.env` files, model cache and temporary demo credentials were not staged. The temporary synthetic credentials file was removed after the browser tool stopped.
 
-The implementation/documentation commit `cecf82a` was pushed to private `main`. Its [ATLAS CI run](https://github.com/Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant/actions/runs/38171091188) **passed** both Backend Tests and Frontend Tests: isolated pgvector setup, migration verification, pytest, Vitest, lint and production build. This validation record was finalized in a later documentation commit; check that later run separately in GitHub Actions.
+The initial Lesson 132 implementation/documentation commit `cecf82a` was pushed to private `main`. Its [ATLAS CI run](https://github.com/Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant/actions/runs/38171091188) **passed** both Backend Tests and Frontend Tests. The later documentation commit `778f4fd` also [passed CI](https://github.com/Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant/actions/runs/38171240935).
+
+The final browser acceptance commit `8bed7ad` was pushed to the same **PRIVATE** repository. A fresh staged Gitleaks scan of its source and documentation found no leaks, and `.env.compose` remained ignored. Its [ATLAS CI run](https://github.com/Batuhan-Arda-S/ATLAS-Enterprise-AI-Knowledge-Assistant/actions/runs/38172078259) **passed** both jobs: isolated pgvector setup, migration verification, pytest, Vitest, lint and production build. This CI runner does not have the Windows Ollama service; the live browser/Qwen3 result above was measured locally against the running Compose stack.
